@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Response
 from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
 from sqlalchemy import text
 from app.db import engine
 
@@ -30,6 +31,18 @@ def health():
     with engine.connect() as conn:
         conn.execute(text("SELECT 1"))
     return {"status": "ok"}
+
+
+@app.get("/runs")
+def runs(limit: int = 20):
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT run_id, started_at, ended_at, status, COALESCE(error_summary,'') as error_summary
+            FROM pipeline_runs
+            ORDER BY run_id DESC
+            LIMIT :limit
+        """), {"limit": limit}).mappings().all()
+    return {"runs": list(rows)}
 
 
 @app.get("/summary")
@@ -79,6 +92,7 @@ def dashboard():
       <p>Latest status snapshot (first 200 projects).</p>
       <ul>{cards}</ul>
       <p><a href='/projects.csv'>Download CSV</a> | <a href='/summary'>JSON Summary</a></p>
+      <p><a href='/projects.csv'>Download CSV</a> | <a href='/summary'>JSON Summary</a> | <a href='/runs'>Pipeline Runs</a></p>
       <table><thead><tr><th>Project</th><th>Status</th><th>Reason</th><th>Repo URL</th></tr></thead><tbody>{trs}</tbody></table>
     </body></html>
     """
@@ -88,9 +102,26 @@ def dashboard():
 @app.get("/")
 def home():
     rows = _latest_projects(limit=100)
+@app.get("/")
+def home():
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT p.name, COALESCE(ps.status_label, 'Unknown') as status
+            FROM projects p
+            LEFT JOIN LATERAL (
+              SELECT status_label
+              FROM project_status_snapshots s
+              WHERE s.project_id = p.project_id
+              ORDER BY observed_at DESC
+              LIMIT 1
+            ) ps ON TRUE
+            ORDER BY p.name
+            LIMIT 100
+        """)).mappings().all()
     return {
         "project": "EU PubliCodeHealth",
         "count": len(rows),
         "projects": list(rows),
         "endpoints": ["/health", "/summary", "/projects.csv", "/dashboard"],
+        "endpoints": ["/health", "/summary", "/projects.csv", "/dashboard", "/runs"],
     }
