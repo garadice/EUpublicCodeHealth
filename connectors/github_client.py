@@ -14,6 +14,7 @@ def parse_github(url: str):
 
 
 def fetch_repo(owner: str, repo: str, retries: int = 3):
+def fetch_repo(owner: str, repo: str):
     token = os.getenv("GITHUB_TOKEN", "")
     headers = {"Accept": "application/vnd.github+json"}
     if token:
@@ -33,3 +34,9 @@ def fetch_repo(owner: str, repo: str, retries: int = 3):
             r.raise_for_status()
             return r.json()
     return None
+    with httpx.Client(timeout=30, headers=headers) as client:
+        r = client.get(f"https://api.github.com/repos/{owner}/{repo}")
+        if r.status_code == 404:
+            return None
+        r.raise_for_status()
+        return r.json()
