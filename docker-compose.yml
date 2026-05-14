@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+  app:
+    build: .
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+  scheduler:
+    build: .
+    env_file: .env
+    depends_on:
+      - db
+    command: ["/bin/sh", "deploy/scheduler.sh"]
+
+volumes:
+  pgdata:
