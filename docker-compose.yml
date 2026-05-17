@@ -1,0 +1,79 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-eupublicode}
+      POSTGRES_USER: ${POSTGRES_USER:-eupublicode}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eupublicode}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eupublicode}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "127.0.0.1:5434:5432"
+    restart: unless-stopped
+    init: true
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-eupublicode}:${POSTGRES_PASSWORD:-eupublicode}@db:5432/${POSTGRES_DB:-eupublicode}
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    entrypoint: ["/bin/sh", "deploy/entrypoint.sh"]
+    command: ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    init: true
+
+  dashboard:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-eupublicode}:${POSTGRES_PASSWORD:-eupublicode}@db:5432/${POSTGRES_DB:-eupublicode}
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8502:8501"
+    command: [
+      "streamlit", "run", "dashboard/main.py",
+      "--server.port=8501",
+      "--server.address=0.0.0.0",
+      "--browser.gatherUsageStats=false",
+    ]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    init: true
+
+  scheduler:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-eupublicode}:${POSTGRES_PASSWORD:-eupublicode}@db:5432/${POSTGRES_DB:-eupublicode}
+    env_file: .env
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ["/bin/sh", "deploy/scheduler.sh"]
+    restart: unless-stopped
+    init: true
+
+volumes:
+  pgdata:

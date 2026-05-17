@@ -1,0 +1,12 @@
+{
+  "id": "22766c9d-4e6f-43d8-b0a7-f6b376f4830a",
+  "url": "https://github.com/Truelite/python-a38.git",
+  "aliases": [
+    "https://github.com/Truelite/python-a38"
+  ],
+  "publiccodeYml": "publiccodeYmlVersion: \"0.2\"\nname: A38\nurl: https://github.com/Truelite/python-a38.git\nsoftwareVersion: 0.1.8\nreleaseDate: \"2024-01-10\"\ninputTypes:\n- text/xml\noutputTypes:\n- text/html\n- text/xml\n- text/x-python\n- application/pdf\n- application/json\n- application/x-x509-ca-cert\nplatforms:\n- linux\n- windows\n- ios\ncategories:\n- billing-and-invoicing\ndevelopmentStatus: beta\nsoftwareType: library\nintendedAudience:\n  countries:\n  - it\ndescription:\n  en:\n    genericName: Library\n    shortDescription: |\n      parse and generate Italian Fattura Elettronica\n    longDescription: \"This library implements a declarative data model similar to Django models, that is designed to describe, validate, serialize and parse Italian Fattura Elettronica data.\\nOnly part of the specification is implemented, with more added as needs will arise. Anyone is welcome to implement the missing pieces they need and send a pull request: the idea is to have a good, free (as in freedom) library to make billing in Italy with Python easier for everyone.\\nThe library can generate various kinds of fatture that pass validation, and can parse all the example XML files distributed by fatturapa.gov.it\\n\"\n    features:\n    - |\n      Implement the Italian Fattura Elettronica in a declarative data model\nlegal:\n  license: Apache-2.0\n  mainCopyrightOwner: Truelite srl\n  repoOwner: Truelite srl\nmaintenance:\n  type: internal\n  contacts:\n  - name: Truelite srl\n    email: a38@truelite.it\nlocalisation:\n  localisationReady: false\n  availableLanguages:\n  - en\ndependsOn:\n  open:\n  - name: Python\n    versionMin: \"3.11\"\n    optional: false\n",
+  "active": true,
+  "vitality": null,
+  "createdAt": "2022-10-11T12:00:28.511365Z",
+  "updatedAt": "2026-05-15T12:11:17.638955Z"
+}

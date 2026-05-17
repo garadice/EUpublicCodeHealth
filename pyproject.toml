@@ -1,0 +1,96 @@
+[project]
+name = "eupublicodehealth"
+version = "0.1.0"
+description = "Data pipeline monitoring repository activity of OSS projects from EU public-sector catalogues"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.13",
+    "httpx>=0.28",
+    "PyYAML>=6.0",
+    "pydantic>=2.11",
+    "pydantic-settings>=2.0",
+    "streamlit>=1.45",
+    "altair>=5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "pytest-httpx>=0.35",
+    "pytest-mock>=3.14",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "pre-commit>=4.0",
+    "types-PyYAML>=6.0",
+]
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*", "connectors*", "pipelines*", "dashboard*"]
+
+# ── Ruff ──────────────────────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+src = ["app", "connectors", "pipelines", "dashboard", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+    "S",    # flake8-bandit (security)
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "connectors", "pipelines", "dashboard"]
+
+# ── Mypy ──────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["yaml.*"]
+ignore_missing_imports = true
+
+# ── Pytest ────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "unit: unit tests (no external dependencies)",
+    "integration: integration tests (require Docker or network)",
+]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+# Ignore S101 (assert) and S105/S106 (hardcoded passwords) in test files
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]

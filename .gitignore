@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment (NEVER commit secrets)
+.env
+.env.local
+.env.production
+
+# Database
+*.db
+*.sqlite3
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
+
+# Alembic
+alembic/versions/__pycache__/
+
+# Streamlit
+.streamlit/secrets.toml
+.playwright-mcp/
+
+# Local development (AI tools, planning docs)
+AGENTS.md
+docs/SESSION_SUMMARY.md
+docs/AUDIT_REPORT.md
+docs/MASTER_PLAN.md
+docs/EU_PUBLICODEHEALTH_IMPLEMENTATION_PLAN.md
+.mypy_cache/
+.ruff_cache/
+data_samples/
