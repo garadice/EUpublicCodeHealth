@@ -48,7 +48,47 @@ Copy `.env.example` to `.env` and fill in the values. All configuration is loade
 
 > **Note:** Inside Docker, `DATABASE_URL` uses the service name `db` as the host. When connecting from the host machine (e.g. with `psql`), use `localhost` and port `5434`.
 
-## 4. Docker Services
+## 4. API Authentication
+
+The API supports optional authentication via API key.
+
+**How it works:**
+
+- Set the `API_KEY` environment variable to enable authentication
+- Leave it empty (or unset) to disable auth (local development)
+- When enabled, all endpoints except `/health` require an `X-API-Key` header
+- The `/health` endpoint is always public (used by Docker health checks and monitoring)
+
+**Enable for production:**
+
+Generate a random key:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Add to `.env`:
+
+```
+API_KEY=your-generated-key-here
+```
+
+**Usage with API key:**
+
+```bash
+curl -H "X-API-Key: your-key" https://your-server/api/projects
+curl -H "X-API-Key: your-key" https://your-server/exports/projects.csv
+```
+
+The health endpoint remains public:
+
+```bash
+curl https://your-server/health
+```
+
+**Dashboard:** The Streamlit dashboard reads directly from PostgreSQL, not through the API, so it does not need the API key.
+
+## 5. Docker Services
 
 The stack consists of four services defined in `docker-compose.yml`:
 
@@ -78,7 +118,7 @@ The stack consists of four services defined in `docker-compose.yml`:
 - Depends on the API service being healthy
 - `restart: unless-stopped`
 
-## 5. Running the Pipeline
+## 6. Running the Pipeline
 
 **Automatic** — The scheduler service runs the pipeline on the interval set by `INGEST_INTERVAL_SECONDS`.
 
@@ -90,7 +130,7 @@ docker compose exec api python -m pipelines.run_all
 
 The pipeline is idempotent: re-running it is safe and will refresh data without duplicating records.
 
-## 6. Backup and Restore
+## 7. Backup and Restore
 
 ```bash
 # Create a compressed backup
@@ -100,7 +140,7 @@ docker compose exec db pg_dump -U eupublicode eupublicode | gzip > backup_$(date
 gunzip -c backup_20250101.sql.gz | docker compose exec -T db psql -U eupublicode eupublicode
 ```
 
-## 7. Monitoring
+## 8. Monitoring
 
 | What | How |
 |---|---|
@@ -109,7 +149,7 @@ gunzip -c backup_20250101.sql.gz | docker compose exec -T db psql -U eupublicode
 | Dashboard status | The Streamlit dashboard shows the latest pipeline run timestamp on the overview page |
 | Container logs | `docker compose logs -f <service>` — tail logs for any service |
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### "Port 5434 already in use"
 
@@ -159,7 +199,7 @@ docker compose exec api python -m pipelines.run_all
 
 Then refresh the dashboard.
 
-## 9. Production Deployment (Future: Hetzner VPS)
+## 10. Production Deployment (Future: Hetzner VPS)
 
 This is an outline for a future production deployment.
 

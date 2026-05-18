@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     # Developers Italia API
     developers_italia_base_url: str = "https://api.developers.italia.it/v1/software"
 
+    # API authentication
+    # Set to a random string to enable API key auth on /api/* and /exports/*.
+    # Leave empty to disable auth (local development mode).
+    api_key: str = ""
+
     # Scheduler
     ingest_interval_seconds: int = 86400
 

@@ -7,12 +7,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
+from app.api.auth import require_api_key
 from app.api.queries import apply_project_filters, build_projects_query
 from app.core.status import VALID_STATUS_LABELS
 from app.db.models import Project
 from app.db.session import get_db
 
-router = APIRouter(prefix="/exports")
+router = APIRouter(prefix="/exports", dependencies=[require_api_key])
 
 DB_SESSION = Depends(get_db)
 

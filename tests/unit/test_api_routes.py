@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.api.main import app
+from app.core.config import get_settings
 from app.db.models import (
     Base,
     CatalogSource,
@@ -57,6 +58,11 @@ app.dependency_overrides[get_db] = _override_get_db
 
 @pytest.fixture(autouse=True)
 def _clean_db():
+    get_settings.cache_clear()
+    # Reset any auth overrides from other test files
+    app.dependency_overrides.pop(get_settings, None)
+    # Ensure get_db override is set (other tests may have changed it)
+    app.dependency_overrides[get_db] = _override_get_db
     db = TestSessionLocal()
     try:
         for table in reversed(Base.metadata.sorted_tables):

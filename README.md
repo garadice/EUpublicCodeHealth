@@ -101,6 +101,8 @@ Labels are assigned by priority: Archived > Data error > Unknown > Active > Slow
 | `GET /exports/projects.csv` | Download CSV export |
 | `GET /api/runs` | Pipeline run history |
 
+All endpoints except `/health` require an `X-API-Key` header when `API_KEY` is set in the environment. See [deployment guide](docs/deployment.md) for details.
+
 ## Data Model
 
 ```mermaid

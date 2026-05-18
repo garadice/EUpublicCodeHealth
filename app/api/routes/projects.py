@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.api.auth import require_api_key
 from app.api.queries import apply_project_filters, build_projects_query, latest_status_subq
 from app.api.schemas import ProjectItem, ProjectsResponse, SummaryResponse
 from app.core.status import VALID_STATUS_LABELS, StatusLabel
@@ -18,7 +19,7 @@ from app.db.models import (
 )
 from app.db.session import get_db
 
-router = APIRouter(prefix="/api")
+router = APIRouter(prefix="/api", dependencies=[require_api_key])
 
 DB_SESSION = Depends(get_db)
 

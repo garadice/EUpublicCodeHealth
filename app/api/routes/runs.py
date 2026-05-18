@@ -3,11 +3,12 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from app.api.auth import require_api_key
 from app.api.schemas import PipelineRunItem, PipelineRunsResponse
 from app.db.models import PipelineRun
 from app.db.session import get_db
 
-router = APIRouter(prefix="/api")
+router = APIRouter(prefix="/api", dependencies=[require_api_key])
 
 DB_SESSION = Depends(get_db)
 
