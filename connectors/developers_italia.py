@@ -9,7 +9,6 @@ API docs: https://api.developers.italia.it/v1/software
 from __future__ import annotations
 
 import asyncio
-import math
 import random
 from dataclasses import dataclass, field
 from typing import Any
@@ -151,7 +150,7 @@ async def _fetch_page_with_retry(
             if exc.response.status_code < 500:
                 raise
             last_error = exc
-            wait_time = BACKOFF_BASE * math.pow(2, attempt) * (0.5 + random.random())  # noqa: S311
+            wait_time = BACKOFF_BASE * (2**attempt) * (0.5 + random.random())  # noqa: S311
             logger.warning(
                 "Retryable server error on attempt %d/%d (status=%d), waiting %.1fs before retry",
                 attempt + 1,

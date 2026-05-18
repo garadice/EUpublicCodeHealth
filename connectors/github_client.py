@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import math
 import random
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -59,6 +58,24 @@ class GitHubRepoMetrics:
     html_url: str
     api_status: str = "success"
     error_message: str | None = None
+
+    @classmethod
+    def error(cls, owner: str, repo_name: str, api_status: str, error_message: str) -> GitHubRepoMetrics:
+        return cls(
+            owner=owner,
+            repo_name=repo_name,
+            stars=0,
+            forks=0,
+            open_issues=0,
+            archived=False,
+            pushed_at=None,
+            license_key=None,
+            topics=[],
+            default_branch="main",
+            html_url="",
+            api_status=api_status,
+            error_message=error_message,
+        )
 
 
 @dataclass
@@ -189,7 +206,7 @@ async def fetch_repo_metrics(
                 exc,
             )
             if attempt < MAX_RETRIES - 1:
-                wait = BACKOFF_BASE * math.pow(2, attempt) * (0.5 + random.random())  # noqa: S311
+                wait = BACKOFF_BASE * (2**attempt) * (0.5 + random.random())  # noqa: S311
                 await asyncio.sleep(wait)
             continue
 
@@ -211,21 +228,7 @@ async def fetch_repo_metrics(
         # Not found — do not retry
         if response.status_code == 404:
             logger.info("Repository %s/%s not found (404)", owner, repo_name)
-            return GitHubRepoMetrics(
-                owner=owner,
-                repo_name=repo_name,
-                stars=0,
-                forks=0,
-                open_issues=0,
-                archived=False,
-                pushed_at=None,
-                license_key=None,
-                topics=[],
-                default_branch="main",
-                html_url="",
-                api_status="not_found",
-                error_message="Repository not found (HTTP 404)",
-            )
+            return GitHubRepoMetrics.error(owner, repo_name, "not_found", "Repository not found (HTTP 404)")
 
         # Rate limited — wait and retry
         if response.status_code == 403:
@@ -245,7 +248,7 @@ async def fetch_repo_metrics(
                 else:
                     # No reset time — use exponential backoff instead
                     if attempt < MAX_RETRIES - 1:
-                        wait = BACKOFF_BASE * math.pow(2, attempt) * (0.5 + random.random())  # noqa: S311
+                        wait = BACKOFF_BASE * (2**attempt) * (0.5 + random.random())  # noqa: S311
                         logger.warning(
                             "Rate limit exhausted, no reset time. Backing off %.1fs (attempt %d/%d)",
                             wait,
@@ -257,21 +260,7 @@ async def fetch_repo_metrics(
             # Other 403 (e.g. repo access blocked) — do not retry
             body_preview = response.text[:200]
             logger.warning("GitHub 403 for %s/%s: %s", owner, repo_name, body_preview)
-            return GitHubRepoMetrics(
-                owner=owner,
-                repo_name=repo_name,
-                stars=0,
-                forks=0,
-                open_issues=0,
-                archived=False,
-                pushed_at=None,
-                license_key=None,
-                topics=[],
-                default_branch="main",
-                html_url="",
-                api_status="rate_limited",
-                error_message=f"HTTP 403: {body_preview}",
-            )
+            return GitHubRepoMetrics.error(owner, repo_name, "rate_limited", f"HTTP 403: {body_preview}")
 
         # 5xx — retry with backoff
         if response.status_code >= 500:
@@ -285,7 +274,7 @@ async def fetch_repo_metrics(
                 response.status_code,
             )
             if attempt < MAX_RETRIES - 1:
-                wait = BACKOFF_BASE * math.pow(2, attempt) * (0.5 + random.random())  # noqa: S311
+                wait = BACKOFF_BASE * (2**attempt) * (0.5 + random.random())  # noqa: S311
                 await asyncio.sleep(wait)
             continue
 
@@ -301,18 +290,4 @@ async def fetch_repo_metrics(
         break
 
     # All retries exhausted or unexpected error
-    return GitHubRepoMetrics(
-        owner=owner,
-        repo_name=repo_name,
-        stars=0,
-        forks=0,
-        open_issues=0,
-        archived=False,
-        pushed_at=None,
-        license_key=None,
-        topics=[],
-        default_branch="main",
-        html_url="",
-        api_status="error",
-        error_message=last_error_msg or "All retries exhausted",
-    )
+    return GitHubRepoMetrics.error(owner, repo_name, "error", last_error_msg or "All retries exhausted")

@@ -162,10 +162,4 @@ def _str_list_field(mapping: dict[str, Any], key: str) -> list[str]:
     raw = mapping.get(key)
     if not isinstance(raw, list):
         return []
-    result: list[str] = []
-    for item in raw:
-        if isinstance(item, str):
-            text = item.strip()
-            if text:
-                result.append(text)
-    return result
+    return [item.strip() for item in raw if isinstance(item, str) and item.strip()]

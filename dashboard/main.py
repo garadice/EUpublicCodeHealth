@@ -12,11 +12,13 @@ from __future__ import annotations
 import io
 import logging
 from datetime import datetime
+from typing import Any
 
 import altair as alt
 import pandas as pd
 import streamlit as st
 from sqlalchemy import and_, func
+from sqlalchemy.orm import Session
 
 from app.core.status import StatusLabel
 from app.db.models import (
@@ -128,7 +130,7 @@ def _inject_css() -> None:
     )
 
 
-def _get_session():
+def _get_session() -> Session:
     """Create a new database session for Streamlit usage."""
     factory = get_session_factory()
     return factory()
@@ -155,7 +157,7 @@ def _style_status_cell(val: str) -> str:
 
 
 @st.cache_data(ttl=300, show_spinner="Loading dashboard data...")
-def load_dashboard_data() -> dict:
+def load_dashboard_data() -> dict[str, Any]:
     """Load all dashboard data from the database.
 
     Returns a dict with keys:
@@ -174,7 +176,7 @@ def load_dashboard_data() -> dict:
         session.close()
 
 
-def _assemble_dashboard(session) -> dict:
+def _assemble_dashboard(session: Session) -> dict[str, Any]:
     """Execute queries and assemble the dashboard payload."""
 
     # ── Projects ──────────────────────────────────────────────────────────
@@ -456,7 +458,7 @@ def render_status_chart(df: pd.DataFrame) -> None:
     st.altair_chart(chart, use_container_width=True)
 
 
-def render_filters(df: pd.DataFrame) -> dict:
+def render_filters(df: pd.DataFrame) -> dict[str, Any]:
     """Render sidebar filter widgets and return the current filter state."""
     with st.sidebar:
         st.header("Filters")

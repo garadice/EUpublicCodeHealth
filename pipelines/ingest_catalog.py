@@ -68,14 +68,10 @@ def _extract_url(entry: dict[str, Any]) -> str:
 
 
 def _extract_aliases(entry: dict[str, Any]) -> list[str]:
-    raw_aliases: Any = entry.get("aliases")
+    raw_aliases = entry.get("aliases")
     if not isinstance(raw_aliases, list):
         return []
-    aliases: list[str] = []
-    for alias in raw_aliases:
-        if isinstance(alias, str) and alias.strip():
-            aliases.append(alias.strip())
-    return aliases
+    return [a.strip() for a in raw_aliases if isinstance(a, str) and a.strip()]
 
 
 def _process_entry(entry: dict[str, Any]) -> IngestedProject | None:

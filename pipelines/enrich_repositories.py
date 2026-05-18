@@ -195,21 +195,7 @@ async def enrich_repositories(
                 repo.owner,
                 repo.repo_name,
             )
-            error_metrics = GitHubRepoMetrics(
-                owner=repo.owner,
-                repo_name=repo.repo_name,
-                stars=0,
-                forks=0,
-                open_issues=0,
-                archived=False,
-                pushed_at=None,
-                license_key=None,
-                topics=[],
-                default_branch="main",
-                html_url="",
-                api_status="error",
-                error_message=str(raw),
-            )
+            error_metrics = GitHubRepoMetrics.error(repo.owner, repo.repo_name, "error", str(raw))
             _create_snapshot(session, repo.id, run_id, error_metrics)
             _update_repository_status(session, repo.id, "error")
             result.error_count += 1
